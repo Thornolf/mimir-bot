@@ -1,22 +1,37 @@
 # frozen_string_literal: true
 
-# This simple bot responds to every "Ping!" message with a "Pong!"
-
 require 'discordrb'
 require 'dotenv'
 
-Dotenv.load
-bot = Discordrb::Bot.new token: ENV['DISCORD_TOKEN']
+class Mimir
+  def perform
+    Dotenv.load
+    bot = Discordrb::Commands::CommandBot.new token: ENV['DISCORD_TOKEN'], prefix: '!'
 
-puts "This bot's invite URL is #{bot.invite_url}."
-puts 'Click on it to invite it to your server.'
+    bot.command(
+      :random,
+      min_args: 0,
+      max_args: 2,
+      description: 'Generates a random number between 0 and 1, 0 and max or min and max.',
+      usage: 'random [min/max] [max]') do |_event, min, max|
+      if max
+        rand(min.to_i..max.to_i)
+      elsif min
+        rand(0..min.to_i)
+      else
+        rand
+      end
+    end
 
-# This method call adds an event handler that will be called on any message that exactly contains the string "Ping!".
-# The code inside it will be executed, and a "Pong!" response will be sent to the channel.
-bot.message(content: 'Ping!') do |event|
-  event.respond 'Pong!'
+    bot.command(:exit, help_available: false) do |event|
+      break unless event.user.id.to_s == ENV['ID_OWNER']
+
+      bot.send_message(event.channel.id, 'Bot is shutting down')
+      exit
+    end
+
+    bot.run
+  end
 end
 
-# This method call has to be put at the end of your script, it is what makes the bot actually connect to Discord. If you
-# leave it out (try it!) the script will simply stop and the bot will not appear online.
-bot.run
+Mimir.new.perform
