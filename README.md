@@ -12,3 +12,4 @@ Road map :
 - [ ] Fetch random recipe from Recipy.fr
 - [x] Random
 - [ ] Fancy block
+- [x] Christian server reminder
